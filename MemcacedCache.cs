@@ -9,7 +9,7 @@ namespace MemcachedTryout
 {
    internal class MemcacedCache : ICache
    {
-      private readonly MemcachedClient _client;
+      private readonly MemcachedClient _cache;
       private readonly ILogger _logger;
 
       public MemcacedCache()
@@ -19,14 +19,16 @@ namespace MemcachedTryout
          config.Servers.Add(new IPEndPoint(IPAddress.Parse("127.0.0.1"), 11211));
          config.Protocol = MemcachedProtocol.Binary;
          
-         _client = new MemcachedClient(null, config);
+         _cache = new MemcachedClient(null, config);
+
+         _cache.NodeFailed += NodeFailedEvent;
       }
 
       public async Task<bool> AddAsync<T>(string key, T value)
       {
          _logger.Debug("Adding item to cache with key {0}", key);
 
-         return await _client.StoreAsync(StoreMode.Set, key, value, TimeSpan.FromDays(90));
+         return await _cache.StoreAsync(StoreMode.Set, key, value, TimeSpan.FromDays(90));
       }
 
       public async Task<T> GetWithSetAsync<T>(string cacheKey, Func<Task<T>> initializeFunction)
@@ -46,7 +48,7 @@ namespace MemcachedTryout
 
       public async Task<T> GetAsync<T>(string key)
       {
-         var cacheItem = await _client.GetAsync<T>(key);
+         var cacheItem = await _cache.GetAsync<T>(key);
 
          if (cacheItem == null)
          {
@@ -63,7 +65,12 @@ namespace MemcachedTryout
       {
          _logger.Debug("Removing item from cache with key {0}", key);
 
-         return await _client.RemoveAsync(key);
+         return await _cache.RemoveAsync(key);
+      }
+
+      private void NodeFailedEvent(IMemcachedNode memcachedNode)
+      {
+         _logger.Error("Node unavailable");
       }
    }
 }

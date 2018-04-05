@@ -9,11 +9,17 @@ namespace MemcachedTryout
    public interface ILogger
    {
       void Debug(string message, params string[] items);
+      void Error(string message, params string[] items);
    }
 
    public class Logger : ILogger
    {
       public void Debug(string message, params string[] items)
+      {
+         Console.WriteLine(message, items);
+      }
+
+      public void Error(string message, params string[] items)
       {
          Console.WriteLine(message, items);
       }
