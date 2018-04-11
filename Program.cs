@@ -16,20 +16,23 @@ namespace MemcachedTryout
          {
             var mc = new MemcacedCache();
 
-            Console.WriteLine("Storing values...");
-            for (var i = 0; i < 10; i += 2)
-               await mc.AddAsync("Hello" + i, "World" + i);
+                while (true)
+                {
+                    Console.WriteLine("Storing values...");
+                    for (var i = 0; i < 10; i += 2)
+                       await mc.AddAsync("Hello" + i, "World" + i);
 
-            Console.WriteLine("Reading values...");
-            for (var i = 0; i < 10; i++)
-            {
-               var item = await mc.GetWithSetAsync("Hello" + i, () => Task.FromResult("World" + i));
-               Console.WriteLine(item);
+                    Console.WriteLine("Reading values...");
+                    for (var i = 0; i < 10; i++)
+                    {
+                       var item = await mc.GetWithSetAsync("Hello" + i, () => Task.FromResult("World" + i));
+                       Console.WriteLine(item);
+                    }
+
+                    Console.WriteLine("Press key to exit");
+                    Console.ReadLine();
+                }
             }
-
-            Console.WriteLine("Press key to exit");
-            Console.ReadLine();
-         }
          catch (Exception e)
          {
             Console.WriteLine(e);
